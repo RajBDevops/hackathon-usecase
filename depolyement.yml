@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapplication
+  namespace: default
+  labels:
+    app: myapplication
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapplication
+  template:
+    metadata:
+      labels:
+        app: myapplication
+    spec:
+      containers:
+        - name: chatgpt-container
+          image: myregistry/usecase:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: config.yml
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
