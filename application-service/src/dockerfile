@@ -8,13 +8,13 @@ RUN apk add --no-cache python3 make g++ git
 # Copy package files
 COPY package*.json ./
 
-# Run npm ci and print logs on failure
+# Run npm ci. If it fails, print npm logs so you can debug.
 RUN npm ci --only=production || (cat /root/.npm/_logs/*.log && false)
 
-# Copy application code
+# Copy the rest of the code
 COPY . .
 
-# Clean npm cache (optional)
+# Clean npm cache to reduce image size
 RUN npm cache clean --force
 
 EXPOSE 3000
