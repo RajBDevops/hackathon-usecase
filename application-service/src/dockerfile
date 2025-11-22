@@ -1,24 +1,16 @@
-FROM node:18-alpine
-
+FROM node:18-alpine AS builder
 WORKDIR /usr/src/app
-
-# Install build tools needed for native modules
 RUN apk add --no-cache python3 make g++ git
-
-# Copy package files
 COPY package*.json ./
-
-# Run npm ci. If it fails, print npm logs so you can debug.
-RUN npm ci --only=production || (cat /root/.npm/_logs/*.log && false)
-
-# Copy the rest of the code
+RUN npm ci
 COPY . .
+RUN npm run build  # if you have build step
 
-# Clean npm cache to reduce image size
-RUN npm cache clean --force
-
-EXPOSE 3000
-
+FROM node:18-alpine AS runtime
+WORKDIR /usr/src/app
+COPY --from=builder /usr/src/app/dist ./dist  # or whatever build output
+COPY --from=builder /usr/src/app/node_modules ./node_modules
 ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["node","dist/index.js"]
 
-CMD ["node", "index.js"]
