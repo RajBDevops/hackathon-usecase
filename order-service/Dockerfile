@@ -10,5 +10,5 @@ FROM openjdk:17-jre-slim AS runtime
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar  
 EXPOSE 8080  
-ENTRYPOINT ["java", "-jar", "order-service/src/test/java/com/hcltech/poc/order_service
+ENTRYPOINT ["java", "-jar", "src/test/java/com/hcltech/poc/order_service
 /OrderServiceApplicationTests.java"]
