@@ -1,0 +1,16 @@
+replicaCount: 2
+
+image:
+  repository: usercase
+  tag: "latest"
+  pullPolicy: Always
+
+app:
+  port: 3000
+
+config:
+  APP_NAME: "My Application"
+  APP_ENV: "production"
+  LOG_LEVEL: "info"
+
+resources: {}
