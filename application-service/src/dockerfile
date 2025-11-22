@@ -2,23 +2,23 @@ FROM node:18-alpine
 
 WORKDIR /usr/src/app
 
-# (Optional) Install build tools if needed by any native modules
-RUN apk add --no-cache git python3 make g++
+# Install build tools needed for native modules
+RUN apk add --no-cache python3 make g++ git
 
-# Copy all files (you could copy just package files first, but single-stage)
+# Copy package files
+COPY package*.json ./
+
+# Run npm ci and print logs on failure
+RUN npm ci --only=production || (cat /root/.npm/_logs/*.log && false)
+
+# Copy application code
 COPY . .
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Clean npm cache to reduce image size
+# Clean npm cache (optional)
 RUN npm cache clean --force
 
-# Expose your app port
 EXPOSE 3000
 
-# Set NODE_ENV (optional but good practice)
 ENV NODE_ENV=production
 
-# Run the app
 CMD ["node", "index.js"]
