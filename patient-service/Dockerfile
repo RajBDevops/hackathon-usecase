@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Disable optional deps (fixes most build failures)
-RUN npm config set optional false
+#RUN npm config set optional false
 
 # Clean cache and install
 RUN npm cache clean --force
