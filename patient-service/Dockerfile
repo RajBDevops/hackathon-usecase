@@ -4,18 +4,14 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# If package-lock.json exists -> use npm ci
-RUN if [ -f package-lock.json ]; then \
-        npm ci --legacy-peer-deps; \
-    else \
-        npm install --legacy-peer-deps; \
-    fi
+RUN echo "===== Checking files =====" && ls -la /app && \
+    (npm ci --legacy-peer-deps --verbose \
+    || npm install --legacy-peer-deps --verbose) \
+    || (echo "===== NPM INSTALL ERROR LOG =====" && cat /root/.npm/_logs/*-debug-0.log && exit 1)
 
 COPY . .
 
 FROM node:18-bullseye
 WORKDIR /app
-
 COPY --from=builder /app .
-
 CMD ["node", "index.js"]
