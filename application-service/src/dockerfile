@@ -1,28 +1,24 @@
-FROM node:18-alpine AS builder
+FROM node:18-alpine
+
 WORKDIR /usr/src/app
 
-# Install build dependencies in a temporary group
-RUN apk add --no-cache --virtual .gyp python3 make g++
+# Install build tools for native modules
+RUN apk add --no-cache python3 make g++ git
 
+# Copy package files first
 COPY package*.json ./
-RUN npm ci
 
-# Remove build deps if they are not needed at runtime
-RUN apk del .gyp
+# Install dependencies (ci) with debug logs
+RUN npm ci || (echo "===== INSTALL FAILED, PRINTING LOGS =====" && cat /root/.npm/_logs/*.log && exit 1)
 
+# Copy the rest of code
 COPY . .
-RUN npm prune --production
 
-FROM node:18-alpine AS runtime
-WORKDIR /usr/src/app
+# Clean npm cache
+RUN npm cache clean --force
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
-
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app ./
+EXPOSE 3000
 
 ENV NODE_ENV=production
-EXPOSE 3000
-CMD ["node", "index.js"]
 
+CMD ["node", "index.js"]
