@@ -27,10 +27,14 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: ./patient-service
-          file: ./patient-service/Dockerfile
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/my-app:latest
-            ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }}
+            context: ./patient-service
+            file: ./patient-service/Dockerfile
+            push: true
+            platforms: linux/amd64,linux/arm64
+            build-args: |
+              NODE_ENV=production
+            tags: |
+                  ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+                  ${{ secrets.DOCKER_USERNAME }}/my-app:${{ github.sha }}
+            provenance: false
+            sbom: false
