@@ -1,24 +1,31 @@
 FROM node:18-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install build tools for native modules
-RUN apk add --no-cache python3 make g++ git
+# Required for node-gyp & native builds
+RUN apk add --no-cache python3 make g++ bash git
 
-# Copy package files first
+# Copy only package files first
 COPY package*.json ./
 
-# Install dependencies (ci) with debug logs
-RUN npm ci || (echo "===== INSTALL FAILED, PRINTING LOGS =====" && cat /root/.npm/_logs/*.log && exit 1)
+# Safe install step:
+# 1. Try npm ci
+# 2. If fails → print logs
+# 3. Try npm install
+# 4. If still fails → exit build
+RUN npm ci \
+  || (echo "===== npm ci FAILED — PRINTING LOGS =====" \
+      && find /root/.npm/_logs -type f -exec cat {} \; \
+      && echo "===== RETRYING WITH npm install =====" \
+      && npm install \
+      || (echo "===== BOTH npm ci AND npm install FAILED =====" && exit 1))
 
-# Copy the rest of code
+# Copy remaining source code
 COPY . .
 
-# Clean npm cache
-RUN npm cache clean --force
+# Build if needed (optional)
+# RUN npm run build
 
 EXPOSE 3000
 
-ENV NODE_ENV=production
-
-CMD ["node", "index.js"]
+CMD ["npm", "index.js"]
