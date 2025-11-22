@@ -28,7 +28,10 @@ jobs:
 
       # 4. Build the Docker image
       - name: Build Docker image
+        run: docker buildx build --progress=plain --no-cache -f path/to/Dockerfile .
+      - name: Build Docker image
         run: |
           docker build . \
             --order-service/Dockerfile \
             --tag my-image-name:latest
+          
