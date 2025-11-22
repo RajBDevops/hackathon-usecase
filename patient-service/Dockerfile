@@ -1,23 +1,22 @@
-# Build stage
 FROM node:18-bullseye AS builder
 
-WORKDIR /usr/src/app
-
-# Install build tools for node-gyp modules
-RUN apt-get update && apt-get install -y python3 make g++ && apt-get clean
+WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --unsafe-perm
+# Disable optional deps (fixes most build failures)
+RUN npm config set optional false
+
+# Clean cache and install
+RUN npm cache clean --force
+RUN npm install --verbose --legacy-peer-deps
 
 COPY . .
 
-# Runtime stage
 FROM node:18-bullseye
+WORKDIR /app
 
-WORKDIR /usr/src/app
-
-COPY --from=builder /usr/src/app .
+COPY --from=builder /app .
 
 EXPOSE 3000
 CMD ["node", "index.js"]
