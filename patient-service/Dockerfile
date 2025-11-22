@@ -9,10 +9,7 @@ COPY package*.json ./
 RUN echo "===== Checking /app files BEFORE npm install =====" && ls -la /app
 
 # 3. Install deps with full debug output
-RUN npm install --legacy-peer-deps --verbose \
-    || (echo "===== NPM INSTALL ERROR LOG =====" \
-    && cat /root/.npm/_logs/*-debug-0.log \
-    && exit 1)
+RUN npm install --legacy-peer-deps --verbose || (echo "===== NPM INSTALL ERROR LOG =====" && cat /root/.npm/_logs/*.log && exit 1)
 
 # 4. Copy rest of project
 COPY . .
